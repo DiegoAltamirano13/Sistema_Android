@@ -13,7 +13,7 @@
             android:icon="@drawable/plus"
             android:title="Agregar Imagenes"
             />
-       <item
+       <!--<item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/bucar"
             android:title="Consultar por Contenedor" />
@@ -21,6 +21,7 @@
             android:id="@+id/nav_gallery2"
             android:icon="@drawable/calendar"
             android:title="Consulta por fechas"/>
+        -->
     </group>
 
     <item android:title="">

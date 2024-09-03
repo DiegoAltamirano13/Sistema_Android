@@ -220,10 +220,10 @@ public class ReportesFragment extends Fragment{
 
                 try {
                     jsonObject = json.getJSONObject(0);
-                    miUsuario.setId_merca(jsonObject.optInt("id_merca"));
+                    /*miUsuario.setId_merca(jsonObject.optInt("id_merca"));
                     miUsuario.setN_merca(jsonObject.optString("n_merca"));
                     miUsuario.setDesc_merca(jsonObject.optString("desc_merca"));
-                    miUsuario.setFecha_reg(jsonObject.optString("fecha_reg"));
+                    miUsuario.setFecha_reg(jsonObject.optString("fecha_reg"));*/
 
                     miUsuario.setBuque(jsonObject.optString("buque"));
                     miUsuario.setFactura(jsonObject.optString("factura"));
@@ -231,14 +231,14 @@ public class ReportesFragment extends Fragment{
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                int identificador = miUsuario.getId_merca();
+                /*int identificador = miUsuario.getId_merca();
                 n_merca.setText(miUsuario.getN_merca());
                 desc_merca.setText(miUsuario.getDesc_merca());
-                fecha_reg.setText(miUsuario.getFecha_reg());
+                fecha_reg.setText(miUsuario.getFecha_reg());*/
 
                 n_buque.setText(miUsuario.getBuque());
                 n_factura.setText(miUsuario.getFactura());
-
+                int identificador = 1;
                 String url2 = "http://sistemasdecontrolderiego.esy.es/Consultar_Imagenes_Nombre.php?id_merca="+identificador;
                 jsonObjectRequest2 =  new JsonObjectRequest(Request.Method.GET, url2, null, new Response.Listener<JSONObject>() {
 

@@ -5,64 +5,21 @@ import android.graphics.BitmapFactory;
 import android.util.Base64;
 
 public class Usuario {
-    private int id_merca;
-    private String n_merca;
-    private String est_merca;
-    private String desc_merca;
-    private Bitmap img_url;
-    private String fecha_reg;
-    private String url_de_imagen;
+
+    private String contenedor;
     private String buque;
     private String factura;
-    private String cliente;
+    private String cod_bars;
+    private String desc_merca;
+    private String url_de_imagen;
+    private Bitmap img_url;
 
-
-    public int getId_merca() {
-        return id_merca;
+    public String getContenedor() {
+        return contenedor;
     }
 
-    public void setId_merca(int id_merca) {
-        this.id_merca = id_merca;
-    }
-
-    public String getUrl_de_imagen() {
-        return url_de_imagen;
-    }
-
-    public void setUrl_de_imagen(String url_de_imagen) {
-        this.url_de_imagen = url_de_imagen;
-    }
-
-    public String getFecha_reg() {
-        return fecha_reg;
-    }
-
-    public void setFecha_reg(String fecha_reg) {
-        this.fecha_reg = fecha_reg;
-    }
-
-    public void setImg_url(Bitmap img_url) {
-        this.img_url = img_url;
-    }
-
-    public String getN_merca() {
-        return n_merca;
-    }
-
-    public void setN_merca(String n_merca) {
-        this.n_merca = n_merca;
-    }
-
-    public String getEst_merca() {
-        return est_merca;
-    }
-
-    public String getDesc_merca() {
-        return desc_merca;
-    }
-
-    public void setDesc_merca(String desc_merca) {
-        this.desc_merca = desc_merca;
+    public void setContenedor(String contenedor) {
+        this.contenedor = contenedor;
     }
 
     public String getBuque() { return buque; }
@@ -73,8 +30,36 @@ public class Usuario {
 
     public void setFactura(String factura) { this.factura = factura; }
 
+    public String getCod_bars() {
+        return cod_bars;
+    }
 
-    public String getCliente() { return cliente;  }
+    public void setCod_bars(String cod_bars) {
+        this.cod_bars = cod_bars;
+    }
 
-    public void setCliente(String cliente) { this.cliente = cliente; }
+    public String getDesc_merca() {
+        return desc_merca;
+    }
+
+    public void setDesc_merca(String desc_merca) {
+        this.desc_merca = desc_merca;
+    }
+
+    public String getUrl_de_imagen() {
+        return url_de_imagen;
+    }
+
+    public void setUrl_de_imagen(String url_de_imagen) {
+        this.url_de_imagen = url_de_imagen;
+    }
+
+
+    public Bitmap getImg_url() {
+        return img_url;
+    }
+
+    public void setImg_url(Bitmap img_url) {
+        this.img_url = img_url;
+    }
 }

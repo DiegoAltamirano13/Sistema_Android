@@ -1,11 +1,7 @@
 package com.diego.lina.sistemadealmacenes;
-
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.ContentProvider;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,41 +10,36 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
-import android.hardware.Camera;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Message;
-import android.os.StrictMode;
-
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -58,51 +49,29 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.diego.lina.sistemadealmacenes.Actualizador.AutoUpdater;
 import com.diego.lina.sistemadealmacenes.Adaptador.ListaImagenesAdapter;
 import com.diego.lina.sistemadealmacenes.ClassCanvas.ClassConection;
-import com.sun.mail.iap.ByteArray;
-
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.regex.Pattern;
-
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
-import javax.mail.Authenticator;
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
+
 
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.app.Activity.RESULT_CANCELED;
+import static android.app.Activity.RESULT_OK;
 
-public class ImportFragment extends Fragment{
+public class ImportFragment extends Fragment {
     //Validaciones de imagenes Guardar
     private static final String CARPETA_PRINCIPAL = ".imagenes_argo/";
     private static final String CARPETA_IMAGEN = "mercancia_imagenes";
@@ -120,7 +89,7 @@ public class ImportFragment extends Fragment{
     private static final int COD_FOTO = 20;
     //Finalizar
     //Campos
-    EditText n_merca, desc_merca, nbuque, nfactura;
+    EditText content, factura, cod_bars, desc_merca, cliente, fecha;
     FloatingActionButton btn_registro;
     StringRequest stringRequest;
     TextView reg;
@@ -141,6 +110,8 @@ public class ImportFragment extends Fragment{
     ImageView imageView2;
 
 
+    ImageButton imgBtnScan;
+
     //Correo
     String correo ="arcuos1113@gmail.com";;
     String psw = "Diegoalta13#";
@@ -151,11 +122,20 @@ public class ImportFragment extends Fragment{
     String correo_usuario;
 
     //Actualizador
-    private AutoUpdater updater;
     private Context context;
 
-    private Spinner spinner;
-    ArrayList<String>clientes;
+    //Spinner plaza
+    private Spinner spinnerPlaza;
+    ArrayList<String>plazas;
+    //Spinner solicitudes
+    private  Spinner spinnerSolicitud;
+    ArrayList<String> arraySolicitud;
+    //RADIO BUTTON
+    RadioButton carga, descarga;
+    RadioButton nacional, fiscal;
+    //sCANNER
+    private int CODE_SCAN = 1;
+    public String nombreImagen;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -165,16 +145,7 @@ public class ImportFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        //ACTUALIZACION
-        Toast.makeText(getContext(),"Buscando Actualizaciones",Toast.LENGTH_LONG);
-        try {
-            //comenzarActualizacion()
-            Toast.makeText(getContext(),"AVISO",Toast.LENGTH_LONG);
-        }catch (Exception ex){
-            Toast.makeText(getContext(),ex.getMessage(),Toast.LENGTH_LONG);
-        }
 
-        //Shared preferences
         SharedPreferences preferences = this.getActivity().getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
         String usuario = preferences.getString("as_usr_nombre", "No estas logueado");
         plaza = preferences.getString("as_plaza_u", "No estas logueado");
@@ -184,10 +155,11 @@ public class ImportFragment extends Fragment{
         View fragmento =  inflater.inflate(R.layout.fragment_import, container, false);
         reg = fragmento.findViewById(R.id.reg);
         //Campos de registro
-        n_merca= fragmento.findViewById(R.id.n_merca);
-        nbuque = fragmento.findViewById(R.id.buque);
-        nfactura = fragmento.findViewById(R.id.factura);
+        content= fragmento.findViewById(R.id.content);
+        factura = fragmento.findViewById(R.id.factura);
+        cod_bars = fragmento.findViewById(R.id.cod_bars);
         desc_merca = fragmento.findViewById(R.id.desc_merca);
+
         //Botones de envio
         btn_registro = fragmento.findViewById(R.id.registrar);
         btn_imagen = fragmento.findViewById(R.id.btnFoto);
@@ -196,10 +168,6 @@ public class ImportFragment extends Fragment{
         request = Volley.newRequestQueue(getContext());
         listiMGURI = new ArrayList<>();
         imageView2 = fragmento.findViewById(R.id.imagen_firma);
-
-        clientes = new ArrayList<>();
-        spinner = (Spinner)fragmento.findViewById(R.id.spinner);
-        listar();
 
 
         if(solicitaPermisosVersionesSuperiores()){
@@ -225,6 +193,7 @@ public class ImportFragment extends Fragment{
         });
 
         //En caso de dar click sobre el boton de registro
+
         btn_registro.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -251,11 +220,192 @@ public class ImportFragment extends Fragment{
               }
 
         });
+        //Creacion de scanners
+        imgBtnScan = fragmento.findViewById(R.id.scanerCB);
+        imgBtnScan.setOnClickListener(mOnClickListener);
 
+        //Plaza
+        spinnerPlaza = fragmento.findViewById(R.id.spinner_plaza);
+        plazas = new ArrayList<>();
+        listarPlaza();
+        //Solicitud
+        spinnerSolicitud = fragmento.findViewById(R.id.spinner_solicitud);
+        arraySolicitud = new ArrayList<>();
 
+        spinnerPlaza.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    arraySolicitud.clear();
+                    spinnerSolicitud.setAdapter(null);
+                    listarSolicitud();
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        
+        spinnerSolicitud.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                informacionExtra();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        //RB
+        carga = fragmento.findViewById(R.id.carga);
+        descarga = fragmento.findViewById(R.id.descarga);
+        nacional = fragmento.findViewById(R.id.nacional);
+        fiscal = fragmento.findViewById(R.id.fiscal);
+        cliente = fragmento.findViewById(R.id.cliente);
+        fecha = fragmento.findViewById(R.id.fecha_reg);
         return fragmento;
     }
+
+    private void informacionExtra() {
+        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+        SharedPreferences preferences = this.getActivity().getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
+        final String sp_plaza, sp_cliente_num;
+        sp_plaza = spinnerPlaza.getSelectedItem().toString();
+        sp_cliente_num = spinnerSolicitud.getSelectedItem().toString();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, ClassConection.URL_WEBB_SERVICES + "solicitud_extra.php?nombreplaza="+sp_plaza+"&solicitud="+sp_cliente_num, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    Log.e("Error", ClassConection.URL_WEBB_SERVICES + "solicitud_extra.php?nombreplaza="+sp_plaza+"&solicitud="+sp_cliente_num);
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONArray jsonArray = jsonObject.getJSONArray("usuario");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                        content.setText(jsonObject1.getString("CONTENEDOR"));
+                        factura.setText(jsonObject1.getString("FACTURA"));
+                        if (jsonObject1.getString("TIPO").equals("1")){
+                            carga.setChecked(true);
+                            descarga.setChecked(false);
+                        }else if (jsonObject1.getString("TIPO").equals("2")){
+                            carga.setChecked(false);
+                            descarga.setChecked(true);
+                        }
+
+                        if (jsonObject1.getString("REGIMEN").equals("1")){
+                            nacional.setChecked(true);
+                            fiscal.setChecked(false);
+                        }else if (jsonObject1.getString("REGIMEN").equals("2")){
+                            fiscal.setChecked(true);
+                            nacional.setChecked(false);
+                        }
+
+                        cliente.setText(jsonObject1.getString("NOMBRECL"));
+                        fecha.setText(jsonObject1.getString("FECHA"));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+        int socketTimeout = 30000;
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        stringRequest.setRetryPolicy(policy);
+        requestQueue.add(stringRequest);
+    }
+
+    private void listarSolicitud() {
+        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+        SharedPreferences preferences = this.getActivity().getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
+        final String sp_plaza, sp_cliente_num;
+        sp_plaza = spinnerPlaza.getSelectedItem().toString();
+        sp_cliente_num =preferences.getString("as_cliente", "No Tiene Cliente");
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, ClassConection.URL_WEBB_SERVICES + "solicitudes.php?nombreplaza="+sp_plaza, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    Log.e("Error", ClassConection.URL_WEBB_SERVICES + "solicitudes.php?plaza="+sp_plaza);
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONArray jsonArray = jsonObject.getJSONArray("usuario");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                        String country = jsonObject1.getString("SOLICITUD");
+                        arraySolicitud.add(country);
+                    }
+                    spinnerSolicitud.setAdapter(new ArrayAdapter<String>(getContext(), R.layout.support_simple_spinner_dropdown_item, arraySolicitud));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+        int socketTimeout = 30000;
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        stringRequest.setRetryPolicy(policy);
+        requestQueue.add(stringRequest);
+    }
+
+    private void listarPlaza() {
+        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+        SharedPreferences preferences = this.getActivity().getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
+        String usr_usuario = preferences.getString("as_usr_nombre", "No estas logueado");
+        String usr_password = preferences.getString("as_password", "No estas logueado");
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, ClassConection.URL_WEBB_SERVICES + "plazas.php", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONArray jsonArray = jsonObject.getJSONArray("usuario");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                        String country = jsonObject1.getString("V_RAZON_SOCIAL");
+                        plazas.add(country);
+                    }
+                    spinnerPlaza.setAdapter(new ArrayAdapter<String>(getContext(), R.layout.support_simple_spinner_dropdown_item, plazas));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+        int socketTimeout = 30000;
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        stringRequest.setRetryPolicy(policy);
+        requestQueue.add(stringRequest);
+    }
+
+    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            IntentIntegrator integrator = IntentIntegrator.forSupportFragment(ImportFragment.this);
+            integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
+            integrator.setPrompt("ESCANEA CODIGO");
+            integrator.setCameraId(0);
+            integrator.setOrientationLocked(false);
+            integrator.setBeepEnabled(false);
+            integrator.setCaptureActivity(CaptureActivituPortrait.class);
+            integrator.setBarcodeImageEnabled(false);
+
+            integrator.initiateScan();
+        }
+    };
+
+
 
     private void mostrarDialog(final int i) {
 
@@ -285,62 +435,50 @@ public class ImportFragment extends Fragment{
             }
         });
 
-
-
-
         dialog.show();
 
     }
 
 
-    public void listar() {
-        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, ClassConection.URL_WEB_SERVICES + "lista-cliente.php", new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    JSONObject jsonObject = new JSONObject(response);
-                    JSONArray jsonArray = jsonObject.getJSONArray("usuario");
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                        String country = jsonObject1.getString("V_RAZON_SOCIAL");
-                        clientes.add(country);
-                    }
-                    spinner.setAdapter(new ArrayAdapter<String>(getContext(), R.layout.support_simple_spinner_dropdown_item, clientes));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-            }
-        });
-        int socketTimeout = 30000;
-        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
-        stringRequest.setRetryPolicy(policy);
-        requestQueue.add(stringRequest);
-
-    }
-
     private void validarCampos() {
-        String n_mercas  = n_merca.getText().toString();
-        String desc_mercas = desc_merca.getText().toString();
-        String n_buque = nbuque.getText().toString();
-        String n_factura = nfactura.getText().toString();
+        String n_mercas  = content.getText().toString();
+        String n_factura = factura.getText().toString();
         int valor = listiMGURI.size();
 
 
         boolean a = validar_merca(n_mercas);
-        boolean b = validar_desc_merca(desc_mercas);
-        boolean c = validarImagenes(valor);
-        boolean d = validarBuque(n_buque);
-        boolean e = validarFactura(n_factura);
+        boolean c = validarFactura(n_factura);
+        boolean f = validarImagenes(valor);
 
-        if (a && b && c && d && e){
+        if (a  && c && f  ){
             cargarService();
         }
+    }
+
+    //Validacion de mercancia
+    private boolean validar_merca(String n_mercas) {
+        Pattern patron = Pattern.compile("^[a-zA-ZÁáÀàÉéÈèÍíÌìÓóÒòÚúÙùÑñüÜ00-9ñN !@#\\$%\\^&\\*\\?_~\\/]+$");
+        if (!patron.matcher(n_mercas).matches() || n_mercas.length()>30) {
+            content.setError("Descripcion invalida");
+            return false;
+        }
+        else {
+            content.setError(null);
+        }
+        return true;
+    }
+
+
+    private boolean validarFactura(String n_factura){
+        Pattern patron = Pattern.compile("^[a-zA-ZÁáÀàÉéÈèÍíÌìÓóÒòÚúÙùÑñüÜ00-9ñN !@#\\$%\\^&\\*\\?_~\\/]+$");
+        if (!patron.matcher(n_factura).matches() || n_factura.length()>30) {
+            factura.setError("Error En Factura");
+            return false;
+        }
+        else {
+            factura.setError(null);
+        }
+        return true;
     }
 
     private boolean validarImagenes(int valor) {
@@ -351,52 +489,6 @@ public class ImportFragment extends Fragment{
         return  true;
     }
 
-    private boolean validar_desc_merca(String desc_mercas) {
-        Pattern patron = Pattern.compile("^[a-zA-ZÁáÀàÉéÈèÍíÌìÓóÒòÚúÙùÑñüÜ00-9ñN !@#\\$%\\^&\\*\\?_~\\/]+$");
-        if (!patron.matcher(desc_mercas).matches() || desc_mercas.length()>160) {
-            desc_merca.setError("Contenedor invalido");
-            return false;
-        }
-        else {
-            desc_merca.setError(null);
-        }
-        return true;
-    }
-
-    private boolean validar_merca(String n_mercas) {
-        Pattern patron = Pattern.compile("^[a-zA-ZÁáÀàÉéÈèÍíÌìÓóÒòÚúÙùÑñüÜ00-9ñN !@#\\$%\\^&\\*\\?_~\\/]+$");
-        if (!patron.matcher(n_mercas).matches() || n_mercas.length()>30) {
-            n_merca.setError("Descripcion invalida");
-            return false;
-        }
-        else {
-            n_merca.setError(null);
-        }
-        return true;
-    }
-
-    private boolean validarBuque(String n_buque){
-        Pattern patron = Pattern.compile("^[a-zA-ZÁáÀàÉéÈèÍíÌìÓóÒòÚúÙùÑñüÜ00-9ñN !@#\\$%\\^&\\*\\?_~\\/]+$");
-        if (!patron.matcher(n_buque).matches() || n_buque.length()>30) {
-            nbuque.setError("Error En Buque");
-            return false;
-        }
-        else {
-            nbuque.setError(null);
-        }
-        return true;
-    }
-    private boolean validarFactura(String n_factura){
-        Pattern patron = Pattern.compile("^[a-zA-ZÁáÀàÉéÈèÍíÌìÓóÒòÚúÙùÑñüÜ00-9ñN !@#\\$%\\^&\\*\\?_~\\/]+$");
-        if (!patron.matcher(n_factura).matches() || n_factura.length()>30) {
-            nfactura.setError("Error En Factura");
-            return false;
-        }
-        else {
-            nfactura.setError(null);
-        }
-        return true;
-    }
 
     static String importFrag;
     public static ImportFragment entrar (String importFrag) {
@@ -411,101 +503,97 @@ public class ImportFragment extends Fragment{
 
     //Abrir camara
     private void abrirCamera(){
-        //Recupera donde se va a guardar la imagen
-            File miArchivo = new File(Environment.getExternalStorageDirectory(), DIRECTORIO_IMAGEN);
-            //Valida que la foto haya sido tomada
-            boolean isTomada = miArchivo.exists();
-            if (isTomada == false) {
-                //Si no es tomada o guardada vuelve a intentar
-                isTomada = miArchivo.mkdirs();
-            }
-            if (isTomada == true) {
-                Long consecutivo = System.currentTimeMillis() / 1000;
-                String nombre = consecutivo.toString() + ".jpg";
-                //Guardar la imagen con un nombre
-                path = Environment.getExternalStorageDirectory() + File.separator + DIRECTORIO_IMAGEN
-                        + File.separator + nombre;
-
-                fileImagen = new File(path);
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileImagen));
-
-                //Valida la version de android
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    String authorities = getContext().getPackageName() + ".provider";
-                    Uri imageUri = FileProvider.getUriForFile(getContext(), authorities, fileImagen);
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-
-                } else {
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileImagen));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Recupera donde se va a guardar la imagen
+                File miArchivo = new File(Environment.getExternalStorageDirectory(), DIRECTORIO_IMAGEN);
+                //Valida que la foto haya sido tomada
+                boolean isTomada = miArchivo.exists();
+                if (isTomada == false) {
+                    //Si no es tomada o guardada vuelve a intentar
+                    isTomada = miArchivo.mkdirs();
                 }
+                if (isTomada == true) {
+                    Long consecutivo = System.currentTimeMillis() / 1000;
+                    String nombre = consecutivo.toString() + ".jpg";
+                    //Guardar la imagen con un nombre
+                    path = Environment.getExternalStorageDirectory() + File.separator + DIRECTORIO_IMAGEN
+                            + File.separator + nombre;
 
-                //Manda el valor COD_FOTO  al onActivityResult
-                startActivityForResult(intent, COD_FOTO);
+                    fileImagen = new File(path);
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileImagen));
+
+                    //Valida la version de android
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        String authorities = getContext().getPackageName() + ".provider";
+                        Uri imageUri = FileProvider.getUriForFile(getContext(), authorities, fileImagen);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+
+                    } else {
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileImagen));
+                    }
+
+                    //Manda el valor COD_FOTO  al onActivityResult
+                    startActivityForResult(intent, COD_FOTO);
+                }
+                Log.d("TAG HILO", "HILO TERMINADO");
             }
+        }).start();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode){
-            case COD_SELECCIONA:
-                //En caso de no seleccionar una imagen te deja
-                if (resultCode != RESULT_CANCELED) {
-                    Uri miPath = data.getData();
-                    try {
 
-                        bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), miPath);
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
 
-                        listiMGURI.add(miPath);
-                        adapter.notifyDataSetChanged();
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        if (result != null){
+            if (result.getContents() != null){
+                Toast.makeText(getContext(), result.getContents(), Toast.LENGTH_SHORT).show();
+                cod_bars.setText(result.getContents());
+            }
+            else {
+                Toast.makeText(getContext(), result.getContents(), Toast.LENGTH_SHORT).show();
+                cod_bars.setText("Error no se escaneo nada");
+            }
+        }else {
+            if (requestCode == COD_FOTO){
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+                    MediaScannerConnection.scanFile(getContext(), new String[]{path}, null, new MediaScannerConnection.OnScanCompletedListener() {
+                        @Override
+                        public void onScanCompleted(String path, Uri uri) {
+                            Log.i("Path imagen", ""+path);
+                        }
+                    });
                 }
-                else{
-                    //foto.setImageResource(R.drawable.img_base);
-                    Toast.makeText(getContext(), "No seleccion de imagenes", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            case COD_FOTO:
-
-                MediaScannerConnection.scanFile(getContext(), new String[]{path}, null, new MediaScannerConnection.OnScanCompletedListener() {
-                            @Override
-                            public void onScanCompleted(String path, Uri uri) {
-                                Log.i("Path imagen", ""+path);
-                            }
-                        });
                 bitmap = BitmapFactory.decodeFile(path);
 
                 if(bitmap == null){
-                   //foto.setImageResource(R.drawable.img_base);
+                    //foto.setImageResource(R.drawable.img_base);
                 }
                 else {
-                    redimensionarImagen(path);
                     listiMGURI.add(Uri.parse(path));
                     adapter.notifyDataSetChanged();
                 }
-
-            break;
+            }
         }
         //bitmap = redimensionarImagen(bitmap, 600, 600);
     }
 
-    private void redimensionarImagen(String path) {
-        Bitmap btm;
-        Log.i("Patch" , path);
-    }
 
     int x;
 
 
     private void cargarService() {
 
-        final String variable1 = n_merca.getText().toString();
-        final String variable3 = desc_merca.getText().toString();
-        if (variable1.length() == 0 || variable3.length() == 0){
+        final String variable1 = content.getText().toString();
+        final  String var3 = factura.getText().toString();
+
+        if (variable1.length() == 0 ||  var3.length() == 0 ) {
             android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
             builder.setMessage("Es necesario llenar todos los campos").setNegativeButton("Aceptar", null)
                     .create().show();
@@ -514,7 +602,7 @@ public class ImportFragment extends Fragment{
             progress = new ProgressDialog(getContext());
             progress.setMessage("Procesando registro...");
             progress.show();
-            final String url = "http://sistemasdecontrolderiego.esy.es/Registro_Mercancia.php";
+            final String url = "http://187.141.70.75:8181/android_app/FotosMercancia/RegistroInfoImagenes.php";
 
             stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
                 @Override
@@ -522,9 +610,10 @@ public class ImportFragment extends Fragment{
                     //envioCorreo();
                     if (response.trim().equalsIgnoreCase("registra")) {
                         for (int x = 0; x < listiMGURI.size(); x++){
-                        //while (x < listiMGURI.size()){
-                            enviarImagenes(x);
-                           // x++;
+                                nombreImagen = String.valueOf(x);
+                                Log.e("VALOR IMAGEN", nombreImagen);
+                                enviarImagenes(x);
+
                         }
 
 
@@ -536,8 +625,6 @@ public class ImportFragment extends Fragment{
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     progress.hide();
-                    Toast.makeText(getContext(), n_merca.getText().toString() + "  " + desc_merca.getText().toString(), Toast.LENGTH_LONG).show();
-
                     Toast.makeText(getContext(), "Conexion incorrecta" + error, Toast.LENGTH_SHORT).show();
                     error.printStackTrace();
                 }
@@ -545,18 +632,39 @@ public class ImportFragment extends Fragment{
             ) {
                 @Override
                 protected Map<String, String> getParams() throws AuthFailureError {
-                    String merca = n_merca.getText().toString();
+                    String plazaN = spinnerPlaza.getSelectedItem().toString();
+                    String vehiculoN = spinnerSolicitud.getSelectedItem().toString();
+                    String clienteN = cliente.getText().toString();
+                    String ncontent = content.getText().toString();
+                    String nfactura = factura.getText().toString();
+                    String tipoCarga = "";
+
+                        if (carga.isChecked()){
+                            tipoCarga = "1";
+                        }else if (descarga.isChecked()){
+                            tipoCarga = "2";
+                        }
+
+                    String tipoRegimen = "";
+                        if (nacional.isChecked()){
+                           tipoRegimen = "1";
+                        }else if (fiscal.isChecked()){
+                            tipoRegimen = "2";
+                        }
+
+                    String ncodbar = cod_bars.getText().toString();
                     String des_merc = desc_merca.getText().toString();
-                    String nbuques = nbuque.getText().toString();
-                    String nfacturas = nfactura.getText().toString();
-                    String cliente = spinner.getSelectedItem().toString();
                     Map<String, String> parametros = new HashMap<>();
-                    parametros.put("n_merca", merca);
-                    parametros.put("desc_merca", des_merc);
-                    parametros.put("as_plaza", plaza);
-                    parametros.put("nbuque", nbuques);
-                    parametros.put("nfactura", nfacturas);
-                    parametros.put("cliente", cliente);
+                    parametros.put("nplaza", plazaN);
+                    parametros.put("vehiculon", vehiculoN);
+                    parametros.put("clienten", clienteN);
+                    parametros.put("ncontent", ncontent);
+                    parametros.put("nfactura", nfactura);
+                    parametros.put("tipocargan", tipoCarga);
+                    parametros.put("tiporegimen", tipoRegimen);
+                    parametros.put("ncodbar", ncodbar);
+                    parametros.put("des_merc", des_merc);
+                    parametros.put("fecha_real", fecha.getText().toString());
                     return parametros;
                 }
             };
@@ -570,100 +678,27 @@ public class ImportFragment extends Fragment{
         progress.hide();
         listiMGURI.clear();
         adapter.notifyDataSetChanged();
-        n_merca.setText("");
-        nbuque.setText("");
-        nfactura.setText("");
+        cod_bars.setText("");
         desc_merca.setText("");
         Toast.makeText(getContext(), "Registro Correcto", Toast.LENGTH_LONG).show();
     }
 
-    /*private void envioCorreo() {
-        String d_email = "email@gmail.com",
-                d_password = "Diegoalta13#",
-                d_uname = "diegoaltamirano1113@gmail.com",
-                d_host = "smtp.gmail.com",
-                d_port  = "587", //465,587
-                m_to = "email@gmail.com",
-                m_subject = "Testing",
-                m_text = "This is a test.";
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-        Properties properties = new Properties();
-        properties.put("mail.smtp.host","smtp.gmail.com");
-        properties.put("mail.smtp.socketFactory.port","587");
-        properties.put("mail.smtp.socketFactory.class","java.net.ssl.SSLSocketFactory");
-        properties.put("mail.smtp.auth","true");
-        properties.put("mail.smtp.port","587");
-        try{
-            session=Session.getDefaultInstance(properties, new Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(correo, psw);
-                }
 
-            });
-            try {
-                if (session != null) {
-                    javax.mail.Message message = new MimeMessage(session);
-                    message.setFrom(new InternetAddress(correo));
-                    message.setSubject("CONTENEDOR  = "+n_merca.getText());
-                    message.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(correo_usuario));
-
-                    BodyPart text = new MimeBodyPart();
-                    //text.setText(n_merca.getText()+ "<b>" + desc_merca.getText()+ "</b>", "utf-8", "HTML");
-                    ((MimeBodyPart) text).setText("Nombre de mercancia= "+ n_merca.getText() +" Descripcion mercancia= "+ desc_merca.getText(), "utf-8", "HTML");
-                    BodyPart img_new = new MimeBodyPart();
-
-
-                    MimeMultipart multipart = new MimeMultipart();
-                    int y = 0;
-                    while (y < listiMGURI.size()){
-                        BodyPart adjunt = new MimeBodyPart();
-                        adjunt.setDataHandler(new DataHandler(new FileDataSource(listiMGURI.get(y).toString())));
-                        adjunt.setFileName(String.valueOf(listiMGURI.get(y)));
-                        multipart.addBodyPart(adjunt);
-                        message.setContent(multipart);
-                        y++;
-                    }
-                    //multipart.addBodyPart(text);
-                    ((MimeBodyPart) img_new).setText("<img src =\"http://sistemasdecontrolderiego.esy.es/img/1.jpg\">", "utf-8", "html");
-                    multipart.addBodyPart(img_new);
-                    message.setContent(multipart);
-                    message.setContent(multipart, "text/html; charset=utf-8");
-
-
-
-                    //protocolo de mensaje
-                    Transport transport = session.getTransport("smtps");
-                    transport.connect(d_host, 465, d_uname, d_password);
-                    transport.sendMessage(message,message.getAllRecipients());
-                    transport.close();
-                    //Transport.send(message);
-                }
-            }
-            catch (MessagingException e ){
-                e.printStackTrace();
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }*/
 
     private void enviarImagenes(final int x) {
 
-        final  String url2 = "http://sistemasdecontrolderiego.esy.es/controladores/Registro_Imagenes_Mercancia.php";
+        final  String url2 = "http://187.141.70.75:8181/android_app/FotosMercancia/RegistroImagenes.php";
         stringRequest = new StringRequest(Request.Method.POST, url2, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+                Log.e("Aviso Imagen", response);
                 if (response.trim().equalsIgnoreCase("registra")) {
                     if (x == listiMGURI.size()-1){
                         limpiarTodo();
-
                     }
                 }
                 else {
-
+                    progress.hide();
                 }
             }
         }, new Response.ErrorListener() {
@@ -680,17 +715,40 @@ public class ImportFragment extends Fragment{
 
                 bitmap2 = BitmapFactory.decodeFile( new File(listiMGURI.get(x).toString()).toString());
                 final String img = convertirImg(bitmap2);
-                String merca = n_merca.getText().toString();
-                String nbuques = nbuque.getText().toString();
-                String nfacturas = nfactura.getText().toString();
-                String cliente = spinner.getSelectedItem().toString();
+                String plazaN = spinnerPlaza.getSelectedItem().toString();
+                String vehiculoN = spinnerSolicitud.getSelectedItem().toString();
+                String clienteN = cliente.getText().toString();
+                String ncontent = content.getText().toString();
+                String nfactura = factura.getText().toString();
+                String tipoCarga = "";
+
+                if (carga.isChecked()){
+                    tipoCarga = "1";
+                }else if (descarga.isChecked()){
+                    tipoCarga = "2";
+                }
+
+                String tipoRegimen = "";
+                if (nacional.isChecked()){
+                    tipoRegimen = "1";
+                }else if (fiscal.isChecked()){
+                    tipoRegimen = "2";
+                }
+                String ncodbar = cod_bars.getText().toString();
+                String des_merc = desc_merca.getText().toString();
                 Map<String, String> parametro = new HashMap<>();
                 parametro.put("img_url", img);
-                parametro.put("n_merca", merca);
-                parametro.put("nbuque", nbuques);
-                parametro.put("nfactura", nfacturas);
-                parametro.put("cliente", cliente);
-                parametro.put("plaza", plaza);
+                parametro.put("nplaza", plazaN);
+                parametro.put("vehiculon", vehiculoN);
+                parametro.put("clienten", clienteN);
+                parametro.put("ncontent", ncontent);
+                parametro.put("nfactura", nfactura);
+                parametro.put("tipocargan", tipoCarga);
+                parametro.put("tiporegimen", tipoRegimen);
+                parametro.put("ncodbar", ncodbar);
+                parametro.put("des_merc", des_merc);
+                parametro.put("fecha_real", fecha.getText().toString());
+                parametro.put("nombreImagens", nombreImagen);
                 return parametro;
             }
 
@@ -726,14 +784,16 @@ public class ImportFragment extends Fragment{
             requestPermissions(new String[]{WRITE_EXTERNAL_STORAGE, CAMERA}, MIS_PERMISOS);
         }
 
-        return false;//implementamos el que procesa el evento dependiendo de lo que se defina aqui
+        return false; //implementamos el que procesa el evento dependiendo de lo que se defina aqui
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode==MIS_PERMISOS){
-            if(grantResults.length==2 && grantResults[0]==PackageManager.PERMISSION_GRANTED && grantResults[1]==PackageManager.PERMISSION_GRANTED){//el dos representa los 2 permisos
+            if(grantResults.length==2
+                    && grantResults[0]==PackageManager.PERMISSION_GRANTED
+                    && grantResults[1]==PackageManager.PERMISSION_GRANTED){//el dos representa los 2 permisos
                 Toast.makeText(getContext(),"Permisos aceptados",Toast.LENGTH_SHORT);
                 btn_imagen.setEnabled(true);
             }
@@ -779,7 +839,4 @@ public class ImportFragment extends Fragment{
         });
         dialogo.show();
     }
-
-
-
 }

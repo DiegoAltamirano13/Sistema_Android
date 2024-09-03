@@ -16,12 +16,11 @@
         android:layout_height="match_parent"
         tools:context=".ImportFragment">
 
-        <!-- TODO: Update blank fragment layout -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Consulta de registros"
+            android:text="Consulta"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:id="@+id/reg"
@@ -29,33 +28,108 @@
             android:textSize="25dp"
             android:textAlignment="center"
             />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="Plaza"
+                android:layout_gravity="center"
+                android:gravity="center_horizontal"
+                android:fontFamily="@font/boldblue"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="20dp"></TextView>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.toptoche.searchablespinnerlibrary.SearchableSpinner
+                    android:id="@+id/spinner_plaza"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:textAlignment="center" />
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="Vehiculo"
+                android:layout_gravity="center"
+                android:gravity="center_horizontal"
+                android:fontFamily="@font/boldblue"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="20dp"></TextView>
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.toptoche.searchablespinnerlibrary.SearchableSpinner
+                    android:id="@+id/spinner_solicitud"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:textAlignment="center" />
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/cliente"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_margin="16dp"
+                    android:layout_marginBottom="10dp"
+                    android:enabled="false"
+                    android:hint="Cliente"
+                    android:inputType="text"
+                    android:textAlignment="center" />
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
+
         <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         style="@style/ThemeOverlay.MaterialComponents.TextInputEditText.FilledBox"
         app:boxBackgroundColor="@color/md_pink_400">
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/n_merca"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="16dp"
-            android:layout_gravity="center"
-            android:hint="Contenedor"
-            android:inputType="text"
-            android:textAlignment="center"
-            android:width="200dp"/>
-    </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <Spinner
-                android:id="@+id/spinner"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_margin="16dp"/>
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="16dp"
+                    android:layout_gravity="center"
+                    android:hint="Contenedor"
+                    android:enabled="false"
+                    android:inputType="text"
+                    android:textAlignment="center"
+                    android:width="200dp"/>
         </android.support.design.widget.TextInputLayout>
+
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
@@ -63,33 +137,132 @@
             style="@style/ThemeOverlay.MaterialComponents.TextInputEditText.FilledBox"
             app:boxBackgroundColor="@color/md_amber_300">
             <android.support.design.widget.TextInputEditText
-                android:id="@+id/n_buque"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_margin="16dp"
-                android:layout_gravity="center"
-                android:hint="Buque"
-                android:inputType="text"
-                android:textAlignment="center"
-                android:width="200dp"/>
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            style="@style/ThemeOverlay.MaterialComponents.TextInputEditText.FilledBox"
-            app:boxBackgroundColor="@color/md_amber_300">
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/n_factura"
+                android:id="@+id/factura"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_margin="16dp"
                 android:layout_gravity="center"
                 android:hint="Factura"
                 android:inputType="text"
+                android:enabled="false"
                 android:textAlignment="center"
                 android:width="200dp"/>
         </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/fecha_reg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="16dp"
+                android:enabled="false"
+                android:hint="Fecha" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:checkedButton="@+id/eventos"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/carga"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginEnd="30dp"
+                    android:enabled="false"
+                    android:gravity="start"
+                    android:text="CARGA"
+                    android:textAlignment="viewStart"></RadioButton>
+
+                <RadioButton
+                    android:id="@+id/descarga"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginEnd="30dp"
+                    android:enabled="false"
+                    android:gravity="end"
+                    android:text="DESCARGA"
+                    android:textAlignment="viewEnd"></RadioButton>
+            </RadioGroup>
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:checkedButton="@+id/eventos"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/nacional"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginEnd="30dp"
+                    android:enabled="false"
+                    android:gravity="start"
+                    android:text="NACIONAL"
+                    android:textAlignment="viewStart"></RadioButton>
+
+                <RadioButton
+                    android:id="@+id/fiscal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginEnd="30dp"
+                    android:layout_marginRight="30dp"
+                    android:enabled="false"
+                    android:gravity="end"
+                    android:text="FISCAL"
+                    android:textAlignment="viewEnd"></RadioButton>
+            </RadioGroup>
+        </android.support.design.widget.TextInputLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center">
+                <android.support.design.widget.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/cod_bars"
+                    android:hint="Codigo Barras"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:layout_margin="16dp"
+                    android:enabled="false"/>
+                <ImageButton
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_scan"
+                    android:id="@+id/scanerCB"
+                    android:saveEnabled="false"
+                    android:backgroundTint="@color/md_blue_300"
+                    android:layout_margin="16dp">
+                </ImageButton>
+            </LinearLayout>
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
@@ -104,21 +277,6 @@
                 android:layout_gravity="center"
                 android:layout_margin="16dp"
                 android:hint="Concepto"
-                android:textAlignment="center"
-                android:width="200dp"
-                android:inputType="text"/>
-        </android.support.design.widget.TextInputLayout>
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/fecha_reg"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:enabled="false"
-                android:layout_gravity="center"
-                android:layout_margin="16dp"
-                android:hint="Fecha reg"
                 android:textAlignment="center"
                 android:width="200dp"
                 android:inputType="text"/>
@@ -139,46 +297,12 @@
             android:layout_height="match_parent"
             tools:context=".ImportFragment"
             android:layout_marginTop="20dp"
-            android:textAlignment="center">
-            <!--<Button
-                android:layout_marginLeft="20dp"
-                android:id="@+id/cerrar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:textColor="@color/md_white_1000"
-                android:background="@drawable/efecto_button"
-                android:text="Cerrar" />-->
+            android:textAlignment="center"
+            android:gravity="center_horizontal">
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
-   <!--<android.support.design.widget.FloatingActionButton
-        android:id="@+id/consultar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/magnifier"
-        android:layout_marginLeft="20dp"
-        android:background="@drawable/efecto_button"
-        android:layout_gravity="bottom|end"
-        android:backgroundTint="@color/md_pink_200"/>
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/btnGuardar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/efecto_button"
-        android:src="@drawable/save"
-        android:layout_gravity="bottom|end"
-        android:backgroundTint="@color/md_blue_400"
-        android:layout_marginLeft="20dp"
-        />
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/addPhoto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/photocamera"
-        android:layout_gravity="bottom|end"
-        android:layout_marginLeft="20dp"
-        />-->
+
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/menu_fab"

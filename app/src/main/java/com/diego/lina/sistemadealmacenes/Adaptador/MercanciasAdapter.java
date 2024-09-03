@@ -40,9 +40,9 @@ public class MercanciasAdapter extends RecyclerView.Adapter<MercanciasAdapter.Me
 
     @Override
     public void onBindViewHolder(@NonNull MercanciasHolder mercanciasHolder, int i) {
-        mercanciasHolder.n_merca.setText(listaMercancias.get(i).getN_merca().toString());
+        /*mercanciasHolder.n_merca.setText(listaMercancias.get(i).getN_merca().toString());
         mercanciasHolder.est_merca.setText(listaMercancias.get(i).getEst_merca().toString());
-        mercanciasHolder.desc_merca.setText(listaMercancias.get(i).getDesc_merca().toString());
+        mercanciasHolder.desc_merca.setText(listaMercancias.get(i).getDesc_merca().toString());*/
 
 
     }

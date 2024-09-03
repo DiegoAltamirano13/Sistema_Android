@@ -7,23 +7,35 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Spinner;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.diego.lina.sistemadealmacenes.ClassCanvas.ClassConection;
 
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.Struct;
+import java.util.ArrayList;
+import java.util.Map;
 
 import br.com.simplepass.loading_button_lib.customViews.CircularProgressButton;
 
@@ -33,21 +45,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     EditText et_usr, et_password;
     Button btn_aceptar;
-
+    private Spinner spinner;
+    ArrayList<String>plaza;
     //CircularProgressButton btn_aceptar;
-
+    String usr_usuario = "";
+    String usr_password = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         et_usr = findViewById(R.id.usuario);
         et_password = findViewById(R.id.usuario_pwd);
         btn_aceptar = findViewById(R.id.btn_aceptar);
+        final Context context = getApplicationContext();
 
-        //btn = findViewById(R.id.btn_id);
 
+        et_password.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)){
+                    plaza = new ArrayList<>();
+                    return true;
+                }else {
+                    return false;
+                }
+            }
+        });
         btn_aceptar.setOnClickListener(this);
 
         btn_aceptar.setText("Aceptar");
@@ -55,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         cargarPreferencias();
     }
+
 
     private void cargarPreferencias() {
         SharedPreferences preferences = getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
@@ -71,11 +96,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_aceptar.setText("Entrando");
         //btn_aceptar.startAnimation();
         final SharedPreferences preferences = getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
-        final String usr_usuario = et_usr.getText().toString();
-        final String usr_password = et_password.getText().toString();
+        usr_usuario = et_usr.getText().toString();
+        usr_password = et_password.getText().toString();
 
         if(usr_password.length() == 0|| usr_usuario.length() == 0){
-
             btn_aceptar.setText("Error");
         } else {
             Response.Listener<String> responseListener = new Response.Listener<String>() {
@@ -84,16 +108,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     try {
                         JSONObject jsonResponse = new JSONObject(response);
                         boolean success = jsonResponse.getBoolean("success");
+                        // boolean success = jsonResponse.getBoolean("success");
                         if (success) {
                             String as_usr_nombre = jsonResponse.getString("as_usr_nombre");
-                            String as_plaza_u = jsonResponse.getString("as_plaza_u");
-                            String correo_usuario = jsonResponse.getString("correo_usuario");
+                            String as_password = jsonResponse.getString("as_password");
+                            //as_access = jsonResponse.getString("as_access");
                             Intent intent = new Intent(MainActivity.this, principal_pagina_menu.class);
                             intent.putExtra("as_usr_nombre", as_usr_nombre);
                             SharedPreferences.Editor editor = preferences.edit();
                             editor.putString("as_usr_nombre", usr_usuario);
-                            editor.putString("as_plaza_u", as_plaza_u);
-                            editor.putString("correo_usuario", correo_usuario );
+                            editor.putString("as_password", as_password);
+                            //editor.putString("as_access", Integer.toString(as_access));
                             editor.commit();
                             MainActivity.this.startActivity(intent);
                         } else {

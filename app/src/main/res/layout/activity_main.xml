@@ -6,92 +6,66 @@
     android:layout_height="match_parent"
     android:background="@drawable/gradient_backgrownd"
     android:orientation="vertical"
-    tools:context=".MainActivity">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_gravity="center"
-        android:id="@+id/tituloLogin"
-        android:text="Argo Almacenadora"
-        android:textColor="@color/md_white_1000"
-        android:textSize="30dp"
-        android:layout_marginBottom="20dp"
-        android:layout_margin="50dp"
-        android:textAlignment="center"
-        android:fontFamily="@font/boldblue"/>
+    tools:context=".MainActivity"
+    android:layout_gravity="center">
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="580dp"
         android:orientation="vertical"
         android:layout_margin="30dp"
-        android:background="@drawable/cuadro_blanco"
-        >
-    <android.support.design.widget.TextInputLayout
-        android:layout_marginTop="50dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ThemeOverlay.MaterialComponents.TextInputEditText.FilledBox"
-        app:boxBackgroundColor="@color/md_amber_300">
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/usuario"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="20dp"
-            android:layout_gravity="center"
-            android:hint="Usuario"
-            android:inputType="text"
-            android:textAlignment="center"
-            android:width="200dp"/>
-    </android.support.design.widget.TextInputLayout>
-
-    <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ThemeOverlay.MaterialComponents.TextInputEditText.FilledBox"
-        app:boxBackgroundColor="@color/md_amber_300">
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/usuario_pwd"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="20dp"
-            android:layout_gravity="center"
-            android:hint="Contraseña"
-            android:inputType="textPassword"
-            android:textAlignment="center"
-            android:width="200dp"/>
-    </android.support.design.widget.TextInputLayout>
-
-    <Button
-        android:id="@+id/btn_aceptar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="8dp"
-        android:layout_marginRight="20dp"
-        android:background="@drawable/efecto_button"
-        android:paddingHorizontal="60dp"
-        android:text="Aceptar"
-        android:textColor="#C2FFDC"
-        android:layout_marginBottom="60dp"/>
-
-    <!--<br.com.simplepass.loading_button_lib.customViews.CircularProgressButton
-            android:id="@+id/btn_aceptar"
+        android:background="@drawable/cuadro_blanco">
+        <ImageView
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:src="@drawable/logo"
+            android:layout_gravity="center">
+        </ImageView>
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            style="@style/ThemeOverlay.MaterialComponents.TextInputEditText.FilledBox"
+            app:boxBackgroundColor="@color/md_amber_300">
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/usuario"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="20dp"
+                android:layout_gravity="center"
+                android:hint="Usuario"
+                android:inputType="text"
+                android:textAlignment="center"
+                android:width="200dp"/>
+        </android.support.design.widget.TextInputLayout>
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ThemeOverlay.MaterialComponents.TextInputEditText.FilledBox"
+            app:boxBackgroundColor="@color/md_amber_300">
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/usuario_pwd"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="20dp"
+                android:layout_gravity="center"
+                android:hint="Contraseña"
+                android:inputType="textPassword"
+                android:textAlignment="center"
+                android:width="200dp"/>
+        </android.support.design.widget.TextInputLayout>
+        <Button
+            android:id="@+id/btn_aceptar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
+            android:layout_marginRight="20dp"
             android:background="@drawable/efecto_button"
-            android:layout_margin="20dp"
-            android:layout_marginBottom="60dp"
-            android:text="Aceptar"
-            android:fontFamily="@font/boldblue"
-            android:textColor="@color/md_white_1000"
             android:paddingHorizontal="60dp"
-            app:spinning_bar_width="4dp"
-            app:spinning_bar_color="#FFF"
-            app:spinning_bar_padding="6dp"/>-->
-
+            android:text="Aceptar"
+            android:textColor="#C2FFDC"
+            android:layout_marginBottom="60dp"
+            android:onClick="onClick"/>
     </LinearLayout>
-
 
 </LinearLayout>

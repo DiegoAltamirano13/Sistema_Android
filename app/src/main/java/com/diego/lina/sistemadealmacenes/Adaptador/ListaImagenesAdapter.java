@@ -70,18 +70,17 @@ implements View.OnClickListener {
     }
 
     public class ListaImagenesHolder extends RecyclerView.ViewHolder {
+
         ImageView img;
 
         public ListaImagenesHolder(View fragment) {
+
             super(fragment);
             img = fragment.findViewById(R.id.url_de_imagen);
         }
 
         public void asignarImg(Uri s) {
-
             img.setImageURI(s);
-            //img.setImageBitmap(s);
-           // img.setImageURI(s);
         }
     }
 }

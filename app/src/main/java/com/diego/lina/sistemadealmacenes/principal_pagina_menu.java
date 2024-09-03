@@ -105,7 +105,7 @@ public class principal_pagina_menu extends AppCompatActivity
             transaction.addToBackStack(null);
             transaction.replace(R.id.contenedor, registraMasImagenes);
             transaction.commit();
-        } else if (id == R.id.nav_gallery) {
+        } /*else if (id == R.id.nav_gallery) {
             //fragmentManager.beginTransaction().replace(R.id.contenedor, new ReportesFragment()).commit();
             ReportesFragment reportesFragment = new ReportesFragment();
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -122,7 +122,7 @@ public class principal_pagina_menu extends AppCompatActivity
             transaction.replace(R.id.contenedor, reportes2Fragment);
             transaction.commit();
             //fragmentManager.beginTransaction().replace(R.id.contenedor, new Reportes2Fragment()).commit();
-        }
+        }*/
         else if (id == R.id.nav_log){
             SharedPreferences preferences = getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = preferences.edit();

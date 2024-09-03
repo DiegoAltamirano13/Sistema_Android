@@ -28,10 +28,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,6 +52,8 @@ import com.android.volley.toolbox.Volley;
 import com.diego.lina.sistemadealmacenes.Adaptador.ListaImagenesAdapterConsulta;
 import com.diego.lina.sistemadealmacenes.ClassCanvas.ClassConection;
 import com.diego.lina.sistemadealmacenes.Entidades.Usuario;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -89,8 +94,9 @@ public class registra_mas_imagenes extends Fragment {
     int identificador;
     ListaImagenesAdapterConsulta adapter;
     private static final int COD_FOTO = 20;
-    EditText n_merca, n_buque, n_factura;
+    EditText cliente, n_merca, n_buque, n_factura, cod_bars, fecha;
     EditText desc_Merca, fecha_reg;
+    ImageButton imgBtnScan;
     com.getbase.floatingactionbutton.FloatingActionButton consultar;
     com.getbase.floatingactionbutton.FloatingActionButton addPhoto;
     com.getbase.floatingactionbutton.FloatingActionButton cerrar;
@@ -105,29 +111,53 @@ public class registra_mas_imagenes extends Fragment {
     private Spinner spinner;
     ArrayList<String>clientes;
 
-
-
     RequestQueue request;
     JsonObjectRequest jsonObjectRequest;
     JsonObjectRequest jsonObjectRequest2;
     ArrayList<Usuario>listImg = new ArrayList<>();
     boolean enviarcorreo = false;
 
+    //NUEVAS VARIABLES
+    //Spinner plaza
+    private Spinner spinnerPlaza;
+    ArrayList<String>plazas;
+    //Spinner solicitudes
+    private  Spinner spinnerSolicitud;
+    ArrayList<String> arraySolicitud;
+    //RADIO BUTTON
+    RadioButton carga, descarga;
+    RadioButton nacional, fiscal;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         View fragment = inflater.inflate(R.layout.fragment_registra_mas_imagenes, container, false);
-        n_merca = fragment.findViewById(R.id.n_merca);
-        n_buque = fragment.findViewById(R.id.n_buque);
-        n_factura = fragment.findViewById(R.id.n_factura);
-        desc_Merca = fragment.findViewById(R.id.desc_merca);
-        fecha_reg = fragment.findViewById(R.id.fecha_reg);
 
-    //Compartir preferencias sexuales
-        listar();
         SharedPreferences preferences = this.getActivity().getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
         plaza = preferences.getString("as_plaza_u", "No estas logueado");
-
         correo_usuario = preferences.getString("correo_usuario", "sin correo");
+        //Creacion de Ligue Back With Front
+
+        spinnerPlaza = fragment.findViewById(R.id.spinner_plaza);
+        plazas = new ArrayList<>();
+        spinnerSolicitud = fragment.findViewById(R.id.spinner_solicitud);
+        arraySolicitud = new ArrayList<>();
+        cliente = fragment.findViewById(R.id.cliente);
+        n_merca = fragment.findViewById(R.id.content);
+        n_factura = fragment.findViewById(R.id.factura);
+        fecha = fragment.findViewById(R.id.fecha_reg);
+        carga = fragment.findViewById(R.id.carga);
+        descarga = fragment.findViewById(R.id.descarga);
+        nacional = fragment.findViewById(R.id.nacional);
+        fiscal = fragment.findViewById(R.id.fiscal);
+        cod_bars = fragment.findViewById(R.id.cod_bars);
+        desc_Merca = fragment.findViewById(R.id.desc_merca);
+
+        //Llenar Spinner
+        listarPlaza();
+
+        //Botones
+        imgBtnScan = fragment.findViewById(R.id.scanerCB);
+        imgBtnScan.setEnabled(false);
         consultar = fragment.findViewById(R.id.consultar);
         addPhoto = fragment.findViewById(R.id.addPhoto);
         cerrar = fragment.findViewById(R.id.cerrar);
@@ -144,12 +174,7 @@ public class registra_mas_imagenes extends Fragment {
         menu_fab = fragment.findViewById(R.id.menu_fab);
         request = Volley.newRequestQueue(getContext());
 
-        clientes = new ArrayList<>();
-        spinner = (Spinner) fragment.findViewById(R.id.spinner);
-
-
         btnGuardar = (com.getbase.floatingactionbutton.FloatingActionButton) fragment.findViewById(R.id.btnGuardar);
-
         cerrar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -186,14 +211,46 @@ public class registra_mas_imagenes extends Fragment {
         });
 
         setRetainInstance(true);
-        Log.i("Tamaño ", String.valueOf(listImg.size()));
+        imgBtnScan.setOnClickListener(mOnClickListener);
+
+        //Al cambiar spinner
+        spinnerPlaza.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                arraySolicitud.clear();
+                spinnerSolicitud.setAdapter(null);
+                listarSolicitud();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        spinnerSolicitud.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                informacionExtra();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
 
         return fragment;
     }
 
-    private void listar() {
+    private void listarPlaza() {
         RequestQueue requestQueue = Volley.newRequestQueue(getContext());
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, ClassConection.URL_WEB_SERVICES + "lista-cliente.php", new Response.Listener<String>() {
+        SharedPreferences preferences = this.getActivity().getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
+        String usr_usuario = preferences.getString("as_usr_nombre", "No estas logueado");
+        String usr_password = preferences.getString("as_password", "No estas logueado");
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, ClassConection.URL_WEBB_SERVICES + "plazas.php", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
@@ -202,9 +259,103 @@ public class registra_mas_imagenes extends Fragment {
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject jsonObject1 = jsonArray.getJSONObject(i);
                         String country = jsonObject1.getString("V_RAZON_SOCIAL");
-                        clientes.add(country);
+                        plazas.add(country);
                     }
-                    spinner.setAdapter(new ArrayAdapter<String>(getContext(), R.layout.support_simple_spinner_dropdown_item, clientes));
+                    spinnerPlaza.setAdapter(new ArrayAdapter<String>(getContext(), R.layout.support_simple_spinner_dropdown_item, plazas));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+        int socketTimeout = 30000;
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        stringRequest.setRetryPolicy(policy);
+        requestQueue.add(stringRequest);
+    }
+
+    private void listarSolicitud() {
+        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+        SharedPreferences preferences = this.getActivity().getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
+        final String sp_plaza, sp_cliente_num;
+        sp_plaza = spinnerPlaza.getSelectedItem().toString();
+        sp_cliente_num =preferences.getString("as_cliente", "No Tiene Cliente");
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, ClassConection.URL_WEBB_SERVICES + "ConsultaInfoFotosHechas.php?nombreplaza="+sp_plaza, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    Log.e("Error", ClassConection.URL_WEBB_SERVICES + "ConsultaInfoFotosHechas.php?plaza="+sp_plaza);
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONArray jsonArray = jsonObject.getJSONArray("usuario");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                        String country = jsonObject1.getString("SOLICITUD");
+                        arraySolicitud.add(country);
+                    }
+                    spinnerSolicitud.setAdapter(new ArrayAdapter<String>(getContext(), R.layout.support_simple_spinner_dropdown_item, arraySolicitud));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+        int socketTimeout = 30000;
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        stringRequest.setRetryPolicy(policy);
+        requestQueue.add(stringRequest);
+    }
+
+    private void informacionExtra() {
+        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
+        SharedPreferences preferences = this.getActivity().getSharedPreferences("as_usr_nombre", Context.MODE_PRIVATE);
+        final String sp_plaza, sp_cliente_num;
+        sp_plaza = spinnerPlaza.getSelectedItem().toString();
+        sp_cliente_num = spinnerSolicitud.getSelectedItem().toString();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, ClassConection.URL_WEBB_SERVICES + "ConfultaInfoExtraFotos.php?nombreplaza="+sp_plaza+"&solicitud="+sp_cliente_num, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    Log.e("Error", ClassConection.URL_WEBB_SERVICES + "solicitud_extra.php?nombreplaza="+sp_plaza+"&solicitud="+sp_cliente_num);
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONArray jsonArray = jsonObject.getJSONArray("usuario");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                        n_merca.setText(jsonObject1.getString("CONTENEDOR"));
+                        n_factura.setText(jsonObject1.getString("FACTURA"));
+                        if (jsonObject1.getString("TIPO").equals("1")){
+                            carga.setChecked(true);
+                            descarga.setChecked(false);
+                        }else if (jsonObject1.getString("TIPO").equals("2")){
+                            carga.setChecked(false);
+                            descarga.setChecked(true);
+                        }
+
+                        if (jsonObject1.getString("REGIMEN").equals("1")){
+                            nacional.setChecked(true);
+                            fiscal.setChecked(false);
+                        }else if (jsonObject1.getString("REGIMEN").equals("2")){
+                            fiscal.setChecked(true);
+                            nacional.setChecked(false);
+                        }
+                        if (jsonObject1.getString("CODIGOBARS").equals("null") ){
+
+                        }else {
+                            cod_bars.setText(jsonObject1.getString("CODIGOBARS"));
+                        }
+
+                        cliente.setText(jsonObject1.getString("NOMBRECL"));
+                        fecha.setText(jsonObject1.getString("FECHA"));
+
+                    }
+                    CargarWebService();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -222,6 +373,22 @@ public class registra_mas_imagenes extends Fragment {
     }
 
 
+    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            IntentIntegrator integrator = IntentIntegrator.forSupportFragment(registra_mas_imagenes.this);
+            integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
+            integrator.setPrompt("ESCANEA CODIGO");
+            integrator.setCameraId(0);
+            integrator.setOrientationLocked(false);
+            integrator.setBeepEnabled(false);
+            integrator.setCaptureActivity(CaptureActivituPortrait.class);
+            integrator.setBarcodeImageEnabled(false);
+            integrator.initiateScan();
+        }
+    };
+
+
     StringRequest stringRequest;
 
     private void subirImagen() {
@@ -230,7 +397,7 @@ public class registra_mas_imagenes extends Fragment {
         progress.setMessage("Procesando registro...");
         progress.show();
 
-        final  String url2 = "http://sistemasdecontrolderiego.esy.es/controladores/Registro_Imagenes_Mercancia.php";
+        final  String url2 = "http://187.141.70.75:8181/android_app/FotosMercancia/RegistroImagenes.php";
         stringRequest = new StringRequest(Request.Method.POST, url2, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -260,16 +427,44 @@ public class registra_mas_imagenes extends Fragment {
 
                 Bitmap bitmap2 = BitmapFactory.decodeFile( new File(path).toString());
                 final String img = convertirImg(bitmap2);
+                String plazaN = spinnerPlaza.getSelectedItem().toString();
+                String vehiculoN = spinnerSolicitud.getSelectedItem().toString();
+                String clienteN = cliente.getText().toString();
+                String ncontent = n_merca.getText().toString();
+                String nfactura = n_factura.getText().toString();
+                String tipoCarga = "";
+
+                if (carga.isChecked()){
+                    tipoCarga = "1";
+                }else if (descarga.isChecked()){
+                    tipoCarga = "2";
+                }
+
+                String tipoRegimen = "";
+                if (nacional.isChecked()){
+                    tipoRegimen = "1";
+                }else if (fiscal.isChecked()){
+                    tipoRegimen = "2";
+                }
+                String ncodbar = cod_bars.getText().toString();
+                String des_merc = desc_Merca.getText().toString();
+                String nombreImagen = "R";
+
                 Map<String, String> parametro = new HashMap<>();
                 parametro.put("img_url", img);
-                parametro.put("id_merca", String.valueOf(identificador));
-                parametro.put("n_merca", n_merca.getText().toString());
-                parametro.put("nbuque", n_buque.getText().toString());
-                parametro.put("nfactura", n_factura.getText().toString());
-                parametro.put("cliente", spinner.getSelectedItem().toString());
-                parametro.put("plaza", plaza);
-
+                parametro.put("nplaza", plazaN);
+                parametro.put("vehiculon", vehiculoN);
+                parametro.put("clienten", clienteN);
+                parametro.put("ncontent", ncontent);
+                parametro.put("nfactura", nfactura);
+                parametro.put("tipocargan", tipoCarga);
+                parametro.put("tiporegimen", tipoRegimen);
+                parametro.put("ncodbar", ncodbar);
+                parametro.put("des_merc", des_merc);
+                parametro.put("fecha_real", fecha.getText().toString());
+                parametro.put("nombreImagens", nombreImagen);
                 return parametro;
+
             }
 
         };
@@ -293,9 +488,11 @@ public class registra_mas_imagenes extends Fragment {
         String n_mercas = n_merca.getText().toString();
         String n_buques = n_buque.getText().toString();
         String n_facturas = n_factura.getText().toString();
+        String cod_barras = cod_bars.getText().toString();
         boolean a = esMercaValida(n_mercas);
         boolean b = esBuqueValido(n_buques);
         boolean c = esFacturaValida(n_facturas);
+        boolean d = esCodBarsValida(cod_barras);
 
         if (n_buque.getText().toString() == "" && n_factura.getText().toString() == "" && n_merca.getText().toString() == ""){
             a = false;
@@ -315,6 +512,23 @@ public class registra_mas_imagenes extends Fragment {
             CargarWebService();
         }
     }
+
+    private boolean esCodBarsValida(String cod_barras) {
+        Pattern patron = Pattern.compile("^[a-zA-ZÁáÀàÉéÈèÍíÌìÓóÒòÚúÙùÑñüÜ00-9ñN !@#\\$%\\^&\\*\\?_~\\/]+$");
+        if (!patron.matcher(cod_barras).matches()){
+            if (cod_bars.getText().toString().isEmpty()){
+
+            }else {
+                cod_bars.setError("Contenedor invalido");
+                return false;
+            }
+        }
+        else{
+            n_factura.setError(null);
+        }
+        return true;
+    }
+
     private boolean esMercaValida(String n_mercas){
         Pattern patron = Pattern.compile("^[a-zA-ZÁáÀàÉéÈèÍíÌìÓóÒòÚúÙùÑñüÜ00-9ñN !@#\\$%\\^&\\*\\?_~\\/]+$");
         if (!patron.matcher(n_mercas).matches()){
@@ -365,44 +579,21 @@ public class registra_mas_imagenes extends Fragment {
     }
 
     private void CargarWebService() {
+        listImg.clear();
+        adapter.notifyDataSetChanged();
+        progress = new ProgressDialog(getContext());
+        progress.setMessage("Consultando...");
+        progress.show();
         menu_fab.collapse();
         listImg.clear();
-        String cliente = spinner.getSelectedItem().toString();
-        String url = "http://sistemasdecontrolderiego.esy.es/Consulta_Mercancias_Nombre.php?n_merca="+n_merca.getText().toString()+"&n_buque="+n_buque.getText().toString()+"&n_factura="+n_factura.getText().toString()+"&cliente="+cliente+"&plaza="+plaza;
-        url = url.replace(" ", "%20");
+        String sp_plaza;
+        String sp_cliente_num;
 
-        jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(final JSONObject response) {
-                final Usuario miUsuario= new Usuario();
-                JSONArray json = response.optJSONArray("usuario");
-                JSONObject jsonObject = null;
+        sp_plaza = spinnerPlaza.getSelectedItem().toString();
+        sp_cliente_num = spinnerSolicitud.getSelectedItem().toString();
 
-                try {
-                    jsonObject = json.getJSONObject(0);
-                    miUsuario.setId_merca(jsonObject.optInt("id_merca"));
-                    miUsuario.setN_merca(jsonObject.optString("n_merca"));
-                    miUsuario.setDesc_merca(jsonObject.optString("desc_merca"));
-                    miUsuario.setFecha_reg(jsonObject.optString("fecha_reg"));
-
-                    //Campos extra
-                    miUsuario.setBuque(jsonObject.optString("buque"));
-                    miUsuario.setFactura(jsonObject.optString("factura"));
-                    miUsuario.setCliente(jsonObject.optString("cliente"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                 identificador = miUsuario.getId_merca();
-                n_merca.setText(miUsuario.getN_merca());
-                desc_Merca.setText(miUsuario.getDesc_merca());
-                fecha_reg.setText(miUsuario.getFecha_reg());
-
-                //Campos extra
-                n_buque.setText(miUsuario.getBuque());
-                n_factura.setText(miUsuario.getFactura());
-                //spinner.setSelection(miUsuario.getCliente());
-                String url2 = "http://sistemasdecontrolderiego.esy.es/Consultar_Imagenes_Nombre.php?id_merca="+identificador;
-                jsonObjectRequest2 =  new JsonObjectRequest(Request.Method.GET, url2, null, new Response.Listener<JSONObject>() {
+        String url2 = ClassConection.URL_WEBB_SERVICES + "Imagenes.php?nombreplaza="+sp_plaza+"&solicitud="+sp_cliente_num;
+        jsonObjectRequest2 =  new JsonObjectRequest(Request.Method.GET, url2, null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response2) {
@@ -415,11 +606,10 @@ public class registra_mas_imagenes extends Fragment {
                                 usuario2 = new Usuario();
                                 JSONObject jsonObject2 = null;
                                 jsonObject2 = jsonArray2.getJSONObject(i);
-                                usuario2.setUrl_de_imagen(jsonObject2.optString("url_de_imagen"));
-                                Log.e("Imagen",""+jsonObject2.optString("url_de_imagen"));
+                                usuario2.setUrl_de_imagen(jsonObject2.optString("URL_IMAGEN"));
+                                Log.e("Imagen",""+jsonObject2.optString("URL_IMAGEN"));
                                 listImg.add(usuario2);
                                 adapter.notifyDataSetChanged();
-
                             }
                             progress.hide();
                             ListaImagenesAdapterConsulta lista_img = new ListaImagenesAdapterConsulta(listImg, getContext());
@@ -446,85 +636,101 @@ public class registra_mas_imagenes extends Fragment {
                     }
                 });
                 request.add(jsonObjectRequest2);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getContext(), "Error de Conexión", Toast.LENGTH_SHORT).show();
-                error.printStackTrace();
-            }
-        });
-        request.add(jsonObjectRequest);
-        //progress.hide();
-    }// Mensaje de salida
+    }
 
 
     private void abrirCamera(){
-        //recupera donde se va a guardar la imagen
-        File miArchivo = new File(Environment.getExternalStorageDirectory(), DIRECTORIO_IMAGEN);
-        boolean isTomada = miArchivo.exists();
-        if (isTomada == false){
-            //Es tomada
-            isTomada = miArchivo.mkdirs();
-        }
-        if (isTomada == true){
-            Long consecutivo = System.currentTimeMillis()/1000;
-            String nombre = consecutivo.toString() +  ".jpg";
-            path = Environment.getExternalStorageDirectory() + File.separator + DIRECTORIO_IMAGEN
-                    + File.separator + nombre;
-            fileImagen = new File(path);
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileImagen));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Recupera donde se va a guardar la imagen
+                File miArchivo = new File(Environment.getExternalStorageDirectory(), DIRECTORIO_IMAGEN);
+                //Valida que la foto haya sido tomada
+                boolean isTomada = miArchivo.exists();
+                if (isTomada == false) {
+                    //Si no es tomada o guardada vuelve a intentar
+                    isTomada = miArchivo.mkdirs();
+                }
+                if (isTomada == true) {
+                    Long consecutivo = System.currentTimeMillis() / 1000;
+                    String nombre = consecutivo.toString() + ".jpg";
+                    //Guardar la imagen con un nombre
+                    path = Environment.getExternalStorageDirectory() + File.separator + DIRECTORIO_IMAGEN
+                            + File.separator + nombre;
 
-            //Valida la version de android
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                String authorities = getContext().getPackageName()+ ".provider";
-                Uri imageUri = FileProvider.getUriForFile(getContext(), authorities, fileImagen);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-            }else {
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileImagen));
+                    fileImagen = new File(path);
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileImagen));
+
+                    //Valida la version de android
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        String authorities = getContext().getPackageName() + ".provider";
+                        Uri imageUri = FileProvider.getUriForFile(getContext(), authorities, fileImagen);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+
+                    } else {
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(fileImagen));
+                    }
+
+                    //Manda el valor COD_FOTO  al onActivityResult
+                    startActivityForResult(intent, COD_FOTO);
+                }
+                Log.d("TAG HILO", "HILO TERMINADO");
             }
-            startActivityForResult(intent, COD_FOTO);
-        }
+        }).start();
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
             super.onActivityResult(requestCode, resultCode, data);
             Log.i("Data", String.valueOf(data));
-
-
-            switch (requestCode){
-                case COD_FOTO:
-                    MediaScannerConnection.scanFile(getContext(), new String[]{path}, null, new MediaScannerConnection.OnScanCompletedListener() {
-                        @Override
-                        public void onScanCompleted(String path, Uri uri) {
-                            Log.e("Path de imagen", ""+path);
-                        }
-                    });
-                    bitmap = BitmapFactory.decodeFile(path);
-                    if (bitmap == null){
-
-                    }else {
-                        redimensionarImagen(path);
-                        Log.e("aviso ", "" +path);
-                        Uri urin;
-                        String stringUri;
-                        urin = Uri.parse(path);
-                        redimensionarImagen(path);
-                        Usuario usuario3 = null;
-                        usuario3 = new Usuario();
-                        stringUri = urin.toString();
-                        Bitmap btm;
-                        byte[] encodeByte = Base64.decode(path, Base64.DEFAULT);
-                        btm = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
-                        usuario3.setImg_url(btm);
-                        usuario3.setUrl_de_imagen(path);
-                        listImg.add(usuario3);
-                        adapter.notifyDataSetChanged();
-                        Log.e("Adapter ", "pa" +path);
-                    }
-                    break;
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null){
+            if (result.getContents() != null){
+                Toast.makeText(getContext(), result.getContents(), Toast.LENGTH_SHORT).show();
+                cod_bars.setText(result.getContents());
             }
+            else {
+                Toast.makeText(getContext(), result.getContents(), Toast.LENGTH_SHORT).show();
+                cod_bars.setText("Error no se escaneo nada");
+            }
+        }else {
+            if (requestCode == COD_FOTO){
+
+                MediaScannerConnection.scanFile(getContext(), new String[]{path}, null, new MediaScannerConnection.OnScanCompletedListener() {
+                    @Override
+                    public void onScanCompleted(String path, Uri uri) {
+                        Log.i("Path imagen", ""+path);
+                    }
+                });
+                bitmap = BitmapFactory.decodeFile(path);
+
+                Log.e("Aviso bitman", path);
+                if(bitmap == null){
+                    Log.e("Aviso bitman", "aqui");
+                    //foto.setImageResource(R.drawable.img_base);
+                }
+                else {
+                    Log.e("aviso ", "" +path);
+                    redimensionarImagen(path);
+                    Uri urin;
+                    String stringUri;
+                    urin = Uri.parse(path);
+                    redimensionarImagen(path);
+                    Usuario usuario3 = null;
+                    usuario3 = new Usuario();
+                    stringUri = urin.toString();
+                    Bitmap btm;
+                    byte[] encodeByte = Base64.decode(path, Base64.DEFAULT);
+                    btm = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
+                    usuario3.setImg_url(btm);
+                    usuario3.setUrl_de_imagen(path);
+                    listImg.add(usuario3);
+                    Log.e("Aviso bitman", "aqui2");
+                    adapter.notifyDataSetChanged();
+                    Log.e("Adapter ", "pa" +path);
+                }
+            }
+        }
     }
     private void redimensionarImagen(String path){
         Bitmap btm;

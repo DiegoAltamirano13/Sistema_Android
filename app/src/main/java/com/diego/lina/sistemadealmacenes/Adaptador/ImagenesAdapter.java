@@ -68,13 +68,14 @@ public class ImagenesAdapter extends RecyclerView.Adapter<ImagenesAdapter.Mercan
 
     @Override
     public void onBindViewHolder(@NonNull MercanciasHolder mercanciasHolder, final int i) {
-        mercanciasHolder.id_merca = listaMercancias.get(i).getId_merca();
+        /*mercanciasHolder.id_merca = listaMercancias.get(i).getId_merca();
         mercanciasHolder.n_merca.setText(listaMercancias.get(i).getN_merca().toString());
        // mercanciasHolder.desc_merca.setText(listaMercancias.get(i).getDesc_merca().toString());
         mercanciasHolder.fecha_reg.setText(listaMercancias.get(i).getFecha_reg().toString());
         mercanciasHolder.buque.setText(listaMercancias.get(i).getBuque().toString());
         mercanciasHolder.factura.setText(listaMercancias.get(i).getFactura().toString());
-        mercanciasHolder.cliente.setText(listaMercancias.get(i).getCliente().toString());
+        mercanciasHolder.cliente.setText(listaMercancias.get(i).getCliente().toString());*/
+
         /*if ((i %2 )== 0){
             mercanciasHolder.cardView.setBackgroundColor(Color.rgb(93, 173, 226));
         }

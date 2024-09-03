@@ -63,7 +63,7 @@ public class ListaImagenesAdapterConsulta extends RecyclerView.Adapter<ListaImag
             @Override
             public void onClick(View v) {
 
-                //Toast toast = Toast.makeText(context, "HolaRec" + lista_img.get(i).getUrl_de_imagen(), Toast.LENGTH_LONG);
+                Toast.makeText(context, "HolaRec" + lista_img.get(i).getUrl_de_imagen(), Toast.LENGTH_LONG).show();
                 //toast.show();
                 dialog = new Dialog(context, android.R.style.Theme_Dialog);
                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -103,15 +103,13 @@ public class ListaImagenesAdapterConsulta extends RecyclerView.Adapter<ListaImag
                     }
                 });
 
-
-
-
                 dialog.show();
 
             }
         });
 
         if(lista_img.get(i).getUrl_de_imagen() != null){
+            Log.e("AVISO IMAGENES ", "PICASO IMAGENES ");
            // CargarIMG(lista_img.get(i).getUrl_de_imagen(), listaImagenesHolder);
 
             if (lista_img.get(i).getUrl_de_imagen().startsWith("http"))
@@ -120,11 +118,13 @@ public class ListaImagenesAdapterConsulta extends RecyclerView.Adapter<ListaImag
             }
             else
             {
+                Log.e("AVISO", lista_img.get(i).getUrl_de_imagen());
                 Picasso.get().load(new File(lista_img.get(i).getUrl_de_imagen())).resize(200, 200).into( listaImagenesHolder.img);
             }
 
         }
         else {
+            Log.e("AVISO IMAGENES ", "PICASO IMAGENES ");
             listaImagenesHolder.img.setImageResource(R.drawable.img_base);
         }
     }

@@ -251,7 +251,7 @@ public class Reportes2Fragment extends Fragment implements Response.Listener<JSO
 
                     jsonObject = jsonArray.getJSONObject(i);
 
-                    usuario.setId_merca(jsonObject.optInt("id_merca"));
+                    /*usuario.setId_merca(jsonObject.optInt("id_merca"));
 
                     usuario.setN_merca(jsonObject.optString("n_merca"));
 
@@ -263,7 +263,7 @@ public class Reportes2Fragment extends Fragment implements Response.Listener<JSO
 
                     //usuario.setDesc_merca(jsonObject.optString("desc_merca"));
 
-                    usuario.setFecha_reg(jsonObject.optString("fecha_reg"));
+                    usuario.setFecha_reg(jsonObject.optString("fecha_reg"));*/
 
                     listaMercancia.add(usuario);
                 }
@@ -278,7 +278,8 @@ public class Reportes2Fragment extends Fragment implements Response.Listener<JSO
                     progress.show();
                     int identificador;
                     img_no_con.setVisibility(View.INVISIBLE);
-                    identificador = listaMercancia.get(recyclerMercancias.getChildAdapterPosition(v)).getId_merca();
+                    //identificador = listaMercancia.get(recyclerMercancias.getChildAdapterPosition(v)).getId_merca();
+                    identificador = 1;
                     String url2 = "http://sistemasdecontrolderiego.esy.es/Consultar_Imagenes_Nombre.php?id_merca="+identificador;
                     JsonObjectRequest  jsonObjectRequest2;
                     listaMercancia.clear();
