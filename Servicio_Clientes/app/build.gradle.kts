@@ -13,7 +13,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -32,6 +31,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -53,5 +53,10 @@ dependencies {
     //Librerias
     implementation ("com.airbnb.android:lottie:6.0.0")
 
+    //Ktor para API_REST
+    implementation("io.ktor:ktor-client-core:2.3.1")
+    implementation("io.ktor:ktor-client-cio:2.3.1")
+    implementation("io.ktor:ktor-client-json:2.3.1")
+    implementation("io.ktor:ktor-client-serialization:2.3.1")
 
 }
